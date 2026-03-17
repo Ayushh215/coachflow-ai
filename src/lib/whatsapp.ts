@@ -1,4 +1,4 @@
-const WHATSAPP_API_URL = 'https://graph.facebook.com/v18.0';
+const WHATSAPP_API_URL = 'https://graph.facebook.com/v22.0';
 
 export async function sendMessage(phone: string, text: string) {
     const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
