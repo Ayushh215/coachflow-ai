@@ -26,11 +26,8 @@ export async function sendMessage(phone: string, text: string) {
             body: JSON.stringify({
                 messaging_product: 'whatsapp',
                 to: phone.replace(/\D/g, ''), // Removes any '+' or spaces
-                type: 'template',
-                template: {
-                    name: 'hello_world',
-                    language: { code: 'en_US' }
-                }
+                type: 'text',
+                text: { body: text }
             }),
         });
 
