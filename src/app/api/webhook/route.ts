@@ -65,12 +65,36 @@ export async function POST(request: NextRequest) {
             [phoneNumberId]
         );
 
+        let owner;
         if (ownerResult.rows.length === 0) {
-            console.warn(`⚠️ No owner found for phone_number_id: ${phoneNumberId}`);
-            return NextResponse.json({ status: 'ok' });
-        }
+            // Fallback for single-tenant / test setups
+            const envPhoneId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+            if (envPhoneId && envPhoneId === phoneNumberId) {
+                console.warn(`⚠️ No owner found for phone_number_id: ${phoneNumberId}, using env-var fallback`);
 
-        const owner = ownerResult.rows[0];
+                // Try to find any existing owner (single-tenant mode)
+                const fallbackResult = await query('SELECT * FROM owners ORDER BY id ASC LIMIT 1');
+                if (fallbackResult.rows.length > 0) {
+                    owner = fallbackResult.rows[0];
+                    // Link this owner to the phone_number_id for future lookups
+                    if (!owner.whatsapp_phone_number_id) {
+                        await query(
+                            'UPDATE owners SET whatsapp_phone_number_id = $1 WHERE id = $2',
+                            [phoneNumberId, owner.id]
+                        );
+                        console.log(`📎 Linked phone_number_id ${phoneNumberId} to owner ${owner.id}`);
+                    }
+                } else {
+                    console.error(`❌ No owners exist in the database. Please run: npx tsx scripts/seed-test-owner.ts`);
+                    return NextResponse.json({ status: 'ok' });
+                }
+            } else {
+                console.warn(`⚠️ No owner found for phone_number_id: ${phoneNumberId}`);
+                return NextResponse.json({ status: 'ok' });
+            }
+        } else {
+            owner = ownerResult.rows[0];
+        }
 
         // 4. Forward the message to our existing state machine
         const base = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
