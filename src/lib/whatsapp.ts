@@ -33,11 +33,11 @@ export async function sendMessage(phone: string, text: string) {
 
         if (response.ok) {
             console.log(`[WhatsApp] ✅ Message sent successfully to ${phone}`);
+            return { success: true, data };
         } else {
             console.error(`[WhatsApp] ❌ API error (${response.status}):`, JSON.stringify(data));
+            return { success: false, error: data };
         }
-
-        return { success: response.ok, data };
     } catch (error) {
         console.error('[WhatsApp] ❌ Send error:', error);
         return { success: false, error };
