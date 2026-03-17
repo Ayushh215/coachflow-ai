@@ -4,7 +4,7 @@ import { join } from 'path';
 import { Pool } from 'pg';
 
 async function initDb() {
-    const connectionString = 'postgresql://postgres:postgres@localhost:5432/coaching_saas';
+    const connectionString = process.env.DATABASE_URL || 'postgresql://postgres:postgres@localhost:5432/coaching_saas';
 
     console.log('🔌 Connecting to database...');
     const pool = new Pool({ connectionString });
@@ -21,11 +21,12 @@ async function initDb() {
         await pool.query(`ALTER TABLE owners ADD COLUMN IF NOT EXISTS whatsapp_phone_number_id VARCHAR(255) UNIQUE`);
         await pool.query(`ALTER TABLE owners ADD COLUMN IF NOT EXISTS admin_phone VARCHAR(20)`);
         await pool.query(`ALTER TABLE owners ALTER COLUMN institute_name SET DEFAULT 'Coaching Institute'`);
+        await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS source VARCHAR(20) DEFAULT 'whatsapp'`);
 
         console.log('✅ Database initialized successfully!');
         console.log('\nTables created:');
         console.log('  - owners (with whatsapp_phone_number_id, admin_phone)');
-        console.log('  - leads');
+        console.log('  - leads (with source)');
         console.log('  - conversations');
     } catch (error) {
         console.error('❌ Database initialization failed:', error);

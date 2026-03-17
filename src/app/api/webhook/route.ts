@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
 
         // 1. Verify this is a WhatsApp API webhook event
         if (body.object !== 'whatsapp_business_account') {
-            return NextResponse.json({ status: 'ignored' }, { status: 404 });
+            return NextResponse.json({ status: 'ignored' }, { status: 200 });
         }
 
         // 2. Parse Meta's payload structure
