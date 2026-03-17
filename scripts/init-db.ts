@@ -22,6 +22,8 @@ async function initDb() {
         await pool.query(`ALTER TABLE owners ADD COLUMN IF NOT EXISTS admin_phone VARCHAR(20)`);
         await pool.query(`ALTER TABLE owners ALTER COLUMN institute_name SET DEFAULT 'Coaching Institute'`);
         await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS source VARCHAR(20) DEFAULT 'whatsapp'`);
+        await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS budget VARCHAR(255)`);
+        await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS timeline VARCHAR(255)`);
 
         console.log('✅ Database initialized successfully!');
         console.log('\nTables created:');

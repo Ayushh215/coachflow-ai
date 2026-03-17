@@ -29,6 +29,8 @@ CREATE TABLE IF NOT EXISTS leads (
   parent_phone VARCHAR(20) NOT NULL,
   class VARCHAR(50),
   course_interest VARCHAR(255),
+  budget VARCHAR(255),
+  timeline VARCHAR(255),
   source VARCHAR(20) DEFAULT 'whatsapp',
   status lead_status DEFAULT 'new',
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

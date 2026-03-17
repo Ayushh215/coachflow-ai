@@ -3,50 +3,6 @@ import { query } from '@/lib/db';
 import { extractIntent } from '@/lib/ai';
 import { sendMessage } from '@/lib/whatsapp';
 
-// ─── Class Parsing ───────────────────────────────────────────────────────────
-
-const CLASS_OPTIONS = [
-    { label: 'Class 9', optionNum: '1', classNum: '9', words: ['nine', 'ninth', '9th'] },
-    { label: 'Class 10', optionNum: '2', classNum: '10', words: ['ten', 'tenth', '10th'] },
-    { label: 'Class 11', optionNum: '3', classNum: '11', words: ['eleven', 'eleventh', '11th'] },
-    { label: 'Class 12', optionNum: '4', classNum: '12', words: ['twelve', 'twelfth', '12th'] },
-];
-
-function parseClassInput(raw: string): string | null {
-    const text = raw.toLowerCase().trim();
-
-    // 1. Exact option number (single digit)
-    for (const opt of CLASS_OPTIONS) {
-        if (text === opt.optionNum) return opt.label;
-    }
-
-    // 2. Exact class number
-    for (const opt of CLASS_OPTIONS) {
-        if (text === opt.classNum) return opt.label;
-    }
-
-    // 3. Pattern: "class 10", "class10", "10th", "10th class", etc.
-    const stripped = text.replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
-    for (const opt of CLASS_OPTIONS) {
-        const patterns = [
-            `class${opt.classNum}`,
-            `${opt.classNum}thclass`,
-            `${opt.classNum}th`,
-            ...opt.words,
-        ];
-        if (patterns.includes(stripped)) return opt.label;
-    }
-
-    // 4. Loose word match (e.g. "I want class ten")
-    for (const opt of CLASS_OPTIONS) {
-        for (const word of opt.words) {
-            if (text.includes(word)) return opt.label;
-        }
-    }
-
-    return null;
-}
-
 // ─── Phone Validation ────────────────────────────────────────────────────────
 
 function isValidPhone(phone: string): boolean {
@@ -56,32 +12,15 @@ function isValidPhone(phone: string): boolean {
 // ─── Messages ────────────────────────────────────────────────────────────────
 
 const MESSAGES = {
-    welcome: (instituteName: string) =>
-        `🎓 Welcome to ${instituteName}!\n\nWhich class are you interested in?\n\n1️⃣ Class 9\n2️⃣ Class 10\n3️⃣ Class 11\n4️⃣ Class 12\n\nPlease reply with a number (1-4) or the class name.`,
-
-    invalidClass: `I'm sorry, I didn't understand that. Please choose one of the options:\n\n1️⃣ Class 9\n2️⃣ Class 10\n3️⃣ Class 11\n4️⃣ Class 12\n\nReply with a number (1-4) or type the class (e.g. "Class 10").`,
-
-    askName: `📝 What is the student's name?`,
-
-    invalidName: `Please enter a valid name (at least 2 characters).\n\n📝 What is the student's name?`,
-
-    askCourse: `📚 Which subject or course are you interested in?\n\n(e.g. Mathematics, Science, Full Course, JEE/NEET Prep)`,
-
-    invalidCourse: `Please enter a valid course or subject name.\n\n📚 Which subject or course are you interested in?`,
-
-    alreadyRegistered: `👋 Welcome back!\n\nYour inquiry is already registered with us. Our team will contact you shortly.\n\nIf you'd like to register another student, reply with "new".`,
-
-    classSelected: (cls: string) =>
-        `✅ Great choice — *${cls}*!\n\n📝 What is the student's name?`,
-
-    nameReceived: (name: string) =>
-        `👋 Nice to meet you, *${name}*!\n\n📚 Which subject or course are you interested in?\n\n(e.g. Mathematics, Science, Full Course, JEE/NEET Prep)`,
-
-    confirmation: (name: string, cls: string, course: string, phone: string) =>
-        `✅ Thank you, *${name}*!\n\nYour inquiry has been registered:\n📋 Class: ${cls}\n📚 Course: ${course}\n📞 Phone: ${phone}\n\n🙏 Our team will contact you shortly!`,
-
-    adminNotification: (name: string, cls: string, course: string, phone: string) =>
-        `🎉 New Lead!\nName: ${name}\nClass: ${cls}\nCourse: ${course}\nPhone: ${phone}`,
+    welcome: `Hi! 👋 I'm here to help you find the right course. What's your name?`,
+    askCourse: (name: string) => `Nice to meet you, ${name}! Which course are you interested in?`,
+    askBudget: `Great choice! What's your budget range? (e.g. ₹5,000–₹20,000)`,
+    askTimeline: `Perfect. When are you looking to start? (This month / Next month / Just exploring)`,
+    confirmation: `Thanks! Our team will contact you shortly. 🙏`,
+    invalidInput: `Sorry, I didn't quite catch that. Could you please specify again?`,
+    alreadyRegistered: `👋 Welcome back!\n\nYour inquiry is already registered. Our team will contact you shortly.\n\nType "new" to start over.`,
+    adminNotification: (name: string, course: string, budget: string, timeline: string, phone: string) =>
+        `🎉 New Lead!\nName: ${name}\nCourse: ${course}\nBudget: ${budget}\nTimeline: ${timeline}\nPhone: ${phone}`,
 };
 
 // ─── POST /api/whatsapp-lead ─────────────────────────────────────────────────
@@ -143,24 +82,7 @@ export async function POST(request: Request) {
         switch (step) {
             // ·· WELCOME ·····················································
             case 'welcome': {
-                reply = MESSAGES.welcome(instituteName);
-                newStep = 'awaiting_class';
-                break;
-            }
-
-            // ·· AWAITING CLASS ··············································
-            case 'awaiting_class': {
-                const intent = await extractIntent(text, 'awaiting_class');
-                // Use parseClassInput to strictly validate the final text (AI output or raw user text)
-                const selectedClass = parseClassInput(intent || text);
-                
-                if (!selectedClass) {
-                    reply = MESSAGES.invalidClass;
-                    // stay in awaiting_class
-                    break;
-                }
-                newData.class = selectedClass;
-                reply = MESSAGES.classSelected(selectedClass);
+                reply = MESSAGES.welcome;
                 newStep = 'awaiting_name';
                 break;
             }
@@ -171,11 +93,11 @@ export async function POST(request: Request) {
                 const finalName = intent || text;
                 
                 if (finalName.length < 2) {
-                    reply = MESSAGES.invalidName;
+                    reply = MESSAGES.invalidInput;
                     break;
                 }
                 newData.student_name = finalName;
-                reply = MESSAGES.nameReceived(finalName);
+                reply = MESSAGES.askCourse(finalName);
                 newStep = 'awaiting_course';
                 break;
             }
@@ -186,30 +108,61 @@ export async function POST(request: Request) {
                 const finalCourse = intent || text;
                 
                 if (finalCourse.length < 2) {
-                    reply = MESSAGES.invalidCourse;
+                    reply = MESSAGES.invalidInput;
                     break;
                 }
                 newData.course_interest = finalCourse;
+                reply = MESSAGES.askBudget;
+                newStep = 'awaiting_budget';
+                break;
+            }
+
+            // ·· AWAITING BUDGET ·············································
+            case 'awaiting_budget': {
+                const intent = await extractIntent(text, 'awaiting_budget');
+                const finalBudget = intent || text;
+                
+                if (finalBudget.length < 2) {
+                    reply = MESSAGES.invalidInput;
+                    break;
+                }
+                newData.budget = finalBudget;
+                reply = MESSAGES.askTimeline;
+                newStep = 'awaiting_timeline';
+                break;
+            }
+
+            // ·· AWAITING TIMELINE ···········································
+            case 'awaiting_timeline': {
+                const intent = await extractIntent(text, 'awaiting_timeline');
+                const finalTimeline = intent || text;
+                
+                if (finalTimeline.length < 2) {
+                    reply = MESSAGES.invalidInput;
+                    break;
+                }
+                newData.timeline = finalTimeline;
 
                 // Create / update lead (UPSERT prevents duplicates)
                 try {
                     await query(
-                        `INSERT INTO leads (owner_id, student_name, parent_phone, class, course_interest, status)
-             VALUES ($1, $2, $3, $4, $5, 'new')
+                        `INSERT INTO leads (owner_id, student_name, parent_phone, course_interest, budget, timeline, status)
+             VALUES ($1, $2, $3, $4, $5, $6, 'new')
              ON CONFLICT (owner_id, parent_phone) DO UPDATE SET
                student_name   = EXCLUDED.student_name,
-               class          = EXCLUDED.class,
                course_interest = EXCLUDED.course_interest,
+               budget         = EXCLUDED.budget,
+               timeline       = EXCLUDED.timeline,
                status         = 'new'
              RETURNING *`,
-                        [owner_id, newData.student_name, phone, newData.class, newData.course_interest]
+                        [owner_id, newData.student_name, phone, newData.course_interest, newData.budget, newData.timeline]
                     );
-                    console.log(`🎉 [LEAD CREATED] Name: ${newData.student_name} | Class: ${newData.class} | Course: ${newData.course_interest} | Phone: ${phone}`);
+                    console.log(`✅ Lead captured: ${newData.student_name} - ${newData.course_interest}`);
 
                     // Notify admin if admin_phone is configured
                     if (adminPhone) {
                         const notification = MESSAGES.adminNotification(
-                            newData.student_name, newData.class, newData.course_interest, phone
+                            newData.student_name, newData.course_interest, newData.budget, newData.timeline, phone
                         );
                         const notifyResult = await sendMessage(adminPhone, notification);
                         if (!notifyResult.success) {
@@ -224,7 +177,7 @@ export async function POST(request: Request) {
                     break;
                 }
 
-                reply = MESSAGES.confirmation(newData.student_name, newData.class, newData.course_interest, phone);
+                reply = MESSAGES.confirmation;
                 newStep = 'complete';
                 newData = {};
                 break;
@@ -234,8 +187,8 @@ export async function POST(request: Request) {
             case 'complete': {
                 const restart = ['new', 'restart', 'start', 'reset', 'hi', 'hello'].includes(text.toLowerCase());
                 if (restart) {
-                    reply = MESSAGES.welcome(instituteName);
-                    newStep = 'awaiting_class';
+                    reply = MESSAGES.welcome;
+                    newStep = 'awaiting_name';
                     newData = {};
                     break;
                 }
@@ -245,8 +198,8 @@ export async function POST(request: Request) {
 
             // ·· UNKNOWN STATE → reset ·······································
             default: {
-                reply = MESSAGES.welcome(instituteName);
-                newStep = 'awaiting_class';
+                reply = MESSAGES.welcome;
+                newStep = 'awaiting_name';
                 newData = {};
             }
         }

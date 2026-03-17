@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
         
         // We only support text messages for this automation
         if (message.type !== 'text') {
+            await sendMessage(message.from, "Please reply with text only 🙏");
             return NextResponse.json({ status: 'ignored_non_text' });
         }
 

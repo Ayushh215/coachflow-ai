@@ -19,13 +19,14 @@ export async function extractIntent(userMessage: string, currentStep: string): P
             messages: [
                 {
                     role: 'system',
-                    content: `You are a WhatsApp bot assistant for an Indian coaching institute. 
-Extract the relevant value from the user's message.
+                    content: `You are a data extractor for a WhatsApp bot handling conversations in English and Indian languages (Hinglish/Hindi). 
+Extract only the requested data point from the user's message, cleaning it up if necessary.
 Current step: ${currentStep}
-- If step is 'awaiting_class': return only the class number (9/10/11/12) or null
-- If step is 'awaiting_name': return the student name or null  
-- If step is 'awaiting_course': return the subject/course or null
-Respond with ONLY the extracted value or the word null. No explanation.`,
+- 'awaiting_name': extract the person's name (e.g., "Rahul", "my name is Rahul" -> "Rahul")
+- 'awaiting_course': extract the subject/course interest (e.g., "Mera course BCA hai" -> "BCA")
+- 'awaiting_budget': extract the budget (e.g., "5 thousand", "5k-10k", "approx ₹5,000" -> "5k-10k")
+- 'awaiting_timeline': extract the timeline (e.g., "next month", "abhi krna hai" -> "This month")
+Respond with ONLY the exact, cleaned extracted value. Do not explain. If no valid data is found, output the word null.`,
                 },
                 {
                     role: 'user',
