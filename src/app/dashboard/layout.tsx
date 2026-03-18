@@ -102,7 +102,7 @@ export default function DashboardLayout({
                             {owner?.name?.charAt(0).toUpperCase()}
                         </div>
                         <div className="sidebar-user-info">
-                            <p>{owner?.name}</p>
+                            <p>{owner?.institute_name}</p>
                             <span>{owner?.email}</span>
                         </div>
                     </div>
