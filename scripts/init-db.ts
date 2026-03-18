@@ -21,6 +21,7 @@ async function initDb() {
         await pool.query(`ALTER TABLE owners ADD COLUMN IF NOT EXISTS whatsapp_phone_number_id VARCHAR(255) UNIQUE`);
         await pool.query(`ALTER TABLE owners ADD COLUMN IF NOT EXISTS whatsapp_access_token VARCHAR(255)`);
         await pool.query(`ALTER TABLE owners ADD COLUMN IF NOT EXISTS admin_phone VARCHAR(20)`);
+        await pool.query(`ALTER TABLE owners ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT TRUE`);
         await pool.query(`ALTER TABLE owners ALTER COLUMN institute_name SET DEFAULT 'Coaching Institute'`);
         await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS source VARCHAR(20) DEFAULT 'whatsapp'`);
         await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS budget VARCHAR(255)`);

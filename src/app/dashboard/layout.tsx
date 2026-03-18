@@ -77,7 +77,7 @@ export default function DashboardLayout({
                 <div className="sidebar-brand">
                     <div className="sidebar-brand-icon">🎓</div>
                     <div>
-                        <h2>CoachIQ</h2>
+                        <h2>CoachFlow AI</h2>
                         <span>{owner?.institute_name}</span>
                     </div>
                 </div>

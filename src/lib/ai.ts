@@ -21,12 +21,13 @@ export async function extractIntent(userMessage: string, currentStep: string): P
                     role: 'system',
                     content: `You are a data extractor for a WhatsApp bot handling conversations in English and Indian languages (Hinglish/Hindi). 
 Extract only the requested data point from the user's message, cleaning it up if necessary.
+If the user's message is gibberish, vague, or does not answer the question (e.g., "idk", "nothing", "what", random letters), output ONLY the word UNCLEAR.
 Current step: ${currentStep}
 - 'awaiting_name': extract the person's name (e.g., "Rahul", "my name is Rahul" -> "Rahul")
-- 'awaiting_course': extract the subject/course interest (e.g., "Mera course BCA hai" -> "BCA")
-- 'awaiting_budget': extract the budget (e.g., "5 thousand", "5k-10k", "approx ₹5,000" -> "5k-10k")
-- 'awaiting_timeline': extract the timeline (e.g., "next month", "abhi krna hai" -> "This month")
-Respond with ONLY the exact, cleaned extracted value. Do not explain. If no valid data is found, output the word null.`,
+- 'awaiting_course': extract the subject/course interest. If it doesn't sound like a real subject/course, output UNCLEAR. (e.g., "Mera course BCA hai" -> "BCA")
+- 'awaiting_budget': extract the budget and format strictly as '₹X,XXX' or '₹X,XXX-₹Y,YYY'. If no clear number is found, output UNCLEAR. (e.g., "5k", "5000" -> "₹5,000")
+- 'awaiting_timeline': extract the timeline and normalize strictly to one of: "This month", "Next month", or "Just exploring". If unclear, output UNCLEAR.
+Respond with ONLY the exact, cleaned extracted value or UNCLEAR. Do not explain.`,
                 },
                 {
                     role: 'user',
@@ -39,8 +40,8 @@ Respond with ONLY the exact, cleaned extracted value. Do not explain. If no vali
 
         const result = response.choices[0]?.message?.content?.trim();
         
-        if (!result || result.toLowerCase() === 'null') {
-            return null;
+        if (!result || result === 'UNCLEAR' || result.toLowerCase() === 'null') {
+            return 'UNCLEAR';
         }
 
         return result;

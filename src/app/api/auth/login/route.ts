@@ -17,7 +17,7 @@ export async function POST(request: Request) {
         const result = await query('SELECT * FROM owners WHERE email = $1', [email]);
         if (result.rows.length === 0) {
             return NextResponse.json(
-                { error: 'Invalid credentials' },
+                { error: 'Email not found. Please sign up first.' },
                 { status: 401 }
             );
         }
@@ -26,8 +26,15 @@ export async function POST(request: Request) {
         const validPassword = await bcrypt.compare(password, owner.password_hash);
         if (!validPassword) {
             return NextResponse.json(
-                { error: 'Invalid credentials' },
+                { error: 'Incorrect password. Please try again.' },
                 { status: 401 }
+            );
+        }
+
+        if (owner.email_verified === false) {
+            return NextResponse.json(
+                { error: 'Please verify your email before logging in. Check the server console for the link.' },
+                { status: 403 }
             );
         }
 

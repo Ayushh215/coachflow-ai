@@ -18,7 +18,10 @@ const MESSAGES = {
     askTimeline: `Perfect. When are you looking to start? (This month / Next month / Just exploring)`,
     confirmation: `Thanks! Our team will contact you shortly. 🙏`,
     invalidInput: `Sorry, I didn't quite catch that. Could you please specify again?`,
-    alreadyRegistered: `👋 Welcome back!\n\nYour inquiry is already registered. Our team will contact you shortly.\n\nType "new" to start over.`,
+    clarifyCourse: `Could you clarify which subject or course you're looking for? E.g. JEE, NEET, Math, English, etc.`,
+    clarifyBudget: `Could you specify a clear budget amount? E.g. "5000", "5k to 10k", etc.`,
+    clarifyTimeline: `Could you specify when you want to start? E.g. "This month", "Next month", or "Just exploring"`,
+    alreadyRegistered: `👋 Welcome back!\n\nYour inquiry is already registered. Our team will contact you shortly.\n\nType "restart" to start over.`,
     adminNotification: (name: string, course: string, budget: string, timeline: string, phone: string) =>
         `🎉 New Lead!\nName: ${name}\nCourse: ${course}\nBudget: ${budget}\nTimeline: ${timeline}\nPhone: ${phone}`,
 };
@@ -69,8 +72,23 @@ export async function POST(request: Request) {
         );
 
         const conversation = convResult.rows[0];
-        const step: string = conversation.step;
-        const data: Record<string, string> = conversation.data || {};
+        let step: string = conversation.step;
+        let data: Record<string, string> = conversation.data || {};
+
+        // ── Check inactive timeout (> 24 hours) ───────────────────────────────
+        const lastUpdated = new Date(conversation.updated_at).getTime();
+        const now = new Date().getTime();
+        if (now - lastUpdated > 24 * 60 * 60 * 1000) {
+            console.log(`⏱️ [TIMEOUT] Resetting inactive conversation for ${phone}`);
+            step = 'welcome';
+            data = {};
+        }
+
+        // ── Global Restart Command ────────────────────────────────────────────
+        if (['restart', 'start over', 'reset', 'new'].includes(text.toLowerCase())) {
+            step = 'welcome';
+            data = {};
+        }
 
         console.log(`📊 [STATE]    Phone: ${phone} | Step: ${step} | Data: ${JSON.stringify(data)}`);
 
@@ -92,7 +110,7 @@ export async function POST(request: Request) {
                 const intent = await extractIntent(text, 'awaiting_name');
                 const finalName = intent || text;
                 
-                if (finalName.length < 2) {
+                if (finalName === 'UNCLEAR' || finalName.length < 2) {
                     reply = MESSAGES.invalidInput;
                     break;
                 }
@@ -107,6 +125,10 @@ export async function POST(request: Request) {
                 const intent = await extractIntent(text, 'awaiting_course');
                 const finalCourse = intent || text;
                 
+                if (finalCourse === 'UNCLEAR') {
+                    reply = MESSAGES.clarifyCourse;
+                    break;
+                }
                 if (finalCourse.length < 2) {
                     reply = MESSAGES.invalidInput;
                     break;
@@ -122,6 +144,10 @@ export async function POST(request: Request) {
                 const intent = await extractIntent(text, 'awaiting_budget');
                 const finalBudget = intent || text;
                 
+                if (finalBudget === 'UNCLEAR') {
+                    reply = MESSAGES.clarifyBudget;
+                    break;
+                }
                 if (finalBudget.length < 2) {
                     reply = MESSAGES.invalidInput;
                     break;
@@ -137,6 +163,10 @@ export async function POST(request: Request) {
                 const intent = await extractIntent(text, 'awaiting_timeline');
                 const finalTimeline = intent || text;
                 
+                if (finalTimeline === 'UNCLEAR') {
+                    reply = MESSAGES.clarifyTimeline;
+                    break;
+                }
                 if (finalTimeline.length < 2) {
                     reply = MESSAGES.invalidInput;
                     break;
@@ -185,13 +215,7 @@ export async function POST(request: Request) {
 
             // ·· COMPLETE (returning user) ····································
             case 'complete': {
-                const restart = ['new', 'restart', 'start', 'reset', 'hi', 'hello'].includes(text.toLowerCase());
-                if (restart) {
-                    reply = MESSAGES.welcome;
-                    newStep = 'awaiting_name';
-                    newData = {};
-                    break;
-                }
+                // Restart logic handled globally at the top
                 reply = MESSAGES.alreadyRegistered;
                 break;
             }

@@ -5,10 +5,6 @@ export async function sendMessage(phone: string, text: string) {
     const phoneNumberId = '1049827054879399';
     const token = (process.env.WHATSAPP_TOKEN || '').trim().replace(/^['"]|['"]$/g, '');
 
-    // 2. DEBUG LOG (Check your Vercel logs for these)
-    console.log(`[WhatsApp Debug] Target Phone: ${phone}`);
-    console.log(`[WhatsApp Debug] Token Length: ${token.length}, First 5 chars: ${token.substring(0, 5)}`); // To verify Vercel is reading it correctly
-
     if (!token) {
         console.error("[WhatsApp] ❌ CRITICAL: WHATSAPP_TOKEN is empty in Vercel environment!");
         return { success: false, error: "Missing Token" };

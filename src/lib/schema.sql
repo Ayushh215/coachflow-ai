@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS owners (
   whatsapp_phone_number_id VARCHAR(255) UNIQUE,
   whatsapp_access_token VARCHAR(255),
   admin_phone VARCHAR(20),
+  email_verified BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

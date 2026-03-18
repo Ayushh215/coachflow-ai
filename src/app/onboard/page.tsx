@@ -15,6 +15,7 @@ export default function OnboardPage() {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     function updateField(field: string, value: string) {
         setForm((prev) => ({ ...prev, [field]: value }));
@@ -39,7 +40,7 @@ export default function OnboardPage() {
                 return;
             }
 
-            router.push('/dashboard');
+            setSuccess(true);
         } catch {
             setError('Network error. Please try again.');
         } finally {
@@ -49,12 +50,27 @@ export default function OnboardPage() {
 
     return (
         <div className="auth-container">
-            <div className="auth-card" style={{ maxWidth: '500px' }}>
-                <div className="auth-logo">
-                    <div className="auth-logo-icon">🎓</div>
-                    <h1>CoachIQ Onboarding</h1>
-                    <p>Create your institute account and connect WhatsApp</p>
+            {success ? (
+                <div className="auth-card" style={{ maxWidth: '500px', textAlign: 'center' }}>
+                    <div className="auth-logo">
+                        <div className="auth-logo-icon" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>✓</div>
+                        <h1>Account Created!</h1>
+                        <p style={{ marginTop: '1rem', color: '#64748b' }}>
+                            We have logged a mock verification email to your server console. 
+                            Please check your terminal, click the link to verify your email, and then you can sign in.
+                        </p>
+                    </div>
+                    <button onClick={() => router.push('/login')} className="btn btn-primary" style={{ marginTop: '2rem' }}>
+                        Go to Login
+                    </button>
                 </div>
+            ) : (
+                <div className="auth-card" style={{ maxWidth: '500px' }}>
+                    <div className="auth-logo">
+                        <div className="auth-logo-icon">🎓</div>
+                        <h1>CoachFlow AI Onboarding</h1>
+                        <p>Create your institute account and connect WhatsApp</p>
+                    </div>
 
                 {error && <div className="auth-error">{error}</div>}
 
@@ -109,7 +125,7 @@ export default function OnboardPage() {
                             value={form.password}
                             onChange={(e) => updateField('password', e.target.value)}
                             required
-                            minLength={6}
+                            minLength={8}
                         />
                     </div>
 
@@ -158,6 +174,7 @@ export default function OnboardPage() {
                     <a href="/login">Sign in</a>
                 </div>
             </div>
+            )}
         </div>
     );
 }

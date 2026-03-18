@@ -14,6 +14,13 @@ export async function POST(request: Request) {
             );
         }
 
+        if (password.length < 8) {
+            return NextResponse.json(
+                { error: 'Password must be at least 8 characters long' },
+                { status: 400 }
+            );
+        }
+
         // Check if email exists
         const existing = await query('SELECT id FROM owners WHERE email = $1', [email]);
         if (existing.rows.length > 0) {
@@ -26,32 +33,23 @@ export async function POST(request: Request) {
         const password_hash = await bcrypt.hash(password, 12);
 
         const result = await query(
-            'INSERT INTO owners (name, email, password_hash, institute_name, whatsapp_phone_number_id, whatsapp_access_token, admin_phone) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, email, institute_name',
+            'INSERT INTO owners (name, email, password_hash, institute_name, whatsapp_phone_number_id, whatsapp_access_token, admin_phone, email_verified) VALUES ($1, $2, $3, $4, $5, $6, $7, false) RETURNING id, name, email, institute_name',
             [name, email, password_hash, institute_name, whatsapp_phone_number_id || null, whatsapp_access_token || null, admin_phone || null]
         );
 
         const owner = result.rows[0];
-        const token = await signToken({
-            id: owner.id,
-            email: owner.email,
-            name: owner.name,
-            institute_name: owner.institute_name,
-        });
 
-        const response = NextResponse.json(
-            { message: 'Account created successfully', owner: { id: owner.id, name: owner.name, email: owner.email, institute_name: owner.institute_name } },
+        // MOCK EMAIL VERIFICATION: Print verify URL to console
+        const verifyUrl = `http://localhost:3000/api/auth/verify?email=${encodeURIComponent(owner.email)}`;
+        console.log(`\n\n📧 MOCK EMAIL SENT:`);
+        console.log(`To: ${owner.email}`);
+        console.log(`Subject: Verify your CoachFlow AI account`);
+        console.log(`Link: ${verifyUrl}\n\n`);
+
+        return NextResponse.json(
+            { message: 'Account created successfully. Please verify your email.', owner: { id: owner.id, name: owner.name, email: owner.email, institute_name: owner.institute_name } },
             { status: 201 }
         );
-
-        response.cookies.set('auth_token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 60 * 60 * 24 * 7, // 7 days
-            path: '/',
-        });
-
-        return response;
     } catch (error) {
         console.error('Signup error:', error);
         return NextResponse.json(

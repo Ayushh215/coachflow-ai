@@ -2,6 +2,17 @@
 
 import { useEffect, useState, useCallback } from 'react';
 
+function formatPhone(phone: string) {
+    const cleaned = phone.replace(/\D/g, '');
+    if (cleaned.length === 12 && cleaned.startsWith('91')) {
+        return `+91 ${cleaned.slice(2, 7)} ${cleaned.slice(7)}`;
+    }
+    if (cleaned.length === 10) {
+        return `+91 ${cleaned.slice(0, 5)} ${cleaned.slice(5)}`;
+    }
+    return phone;
+}
+
 interface Lead {
     id: number;
     student_name: string;
@@ -23,8 +34,8 @@ const STATUS_LABELS: Record<string, string> = {
     new: 'New',
     contacted: 'Contacted',
     demo_booked: 'Demo Booked',
-    admitted: 'Admitted',
-    not_interested: 'Not Interested',
+    admitted: 'Converted',
+    not_interested: 'Lost',
 };
 
 const ALL_STATUSES = ['new', 'contacted', 'demo_booked', 'admitted', 'not_interested'];
@@ -198,7 +209,7 @@ export default function LeadsPage() {
                                 {leads.map((lead) => (
                                     <tr key={lead.id}>
                                         <td style={{ fontWeight: 600 }}>{lead.student_name || '—'}</td>
-                                        <td className="phone-cell">{lead.parent_phone}</td>
+                                        <td className="phone-cell">{formatPhone(lead.parent_phone)}</td>
                                         <td>{lead.class || '—'}</td>
                                         <td>{lead.course_interest || '—'}</td>
                                         <td>
@@ -206,6 +217,7 @@ export default function LeadsPage() {
                                                 className={`status-select ${lead.status}`}
                                                 value={lead.status}
                                                 onChange={(e) => handleStatusChange(lead.id, e.target.value)}
+                                                style={{ padding: '4px 8px', borderRadius: '12px', fontSize: '12px', fontWeight: 600, border: 'none' }}
                                             >
                                                 {ALL_STATUSES.map((s) => (
                                                     <option key={s} value={s}>

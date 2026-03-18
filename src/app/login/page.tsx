@@ -42,7 +42,7 @@ export default function LoginPage() {
             <div className="auth-card">
                 <div className="auth-logo">
                     <div className="auth-logo-icon">🎓</div>
-                    <h1>CoachIQ</h1>
+                    <h1>CoachFlow AI</h1>
                     <p>Sign in to manage your leads</p>
                 </div>
 
@@ -75,6 +75,10 @@ export default function LoginPage() {
                             required
                         />
                     </div>
+                    
+                    <div style={{ textAlign: 'right', marginBottom: '1rem', marginTop: '-0.5rem' }}>
+                        <a href="#" style={{ fontSize: '0.875rem', color: '#3b82f6', textDecoration: 'none' }}>Forgot password?</a>
+                    </div>
 
                     <button type="submit" className="btn btn-primary" disabled={loading}>
                         {loading ? 'Signing in...' : 'Sign In'}
@@ -83,7 +87,7 @@ export default function LoginPage() {
 
                 <div className="auth-footer">
                     Don&apos;t have an account?{' '}
-                    <a href="/signup">Create one</a>
+                    <a href="/onboard">Create one</a>
                 </div>
             </div>
         </div>
