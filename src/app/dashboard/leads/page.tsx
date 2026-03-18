@@ -19,6 +19,8 @@ interface Lead {
     parent_phone: string;
     class: string;
     course_interest: string;
+    budget: string | null;
+    timeline: string | null;
     status: string;
     created_at: string;
 }
@@ -147,9 +149,15 @@ export default function LeadsPage() {
                     <h1>Leads</h1>
                     <p>Manage all your student inquiries and leads</p>
                 </div>
-                <button className="btn btn-primary" style={{ width: 'auto' }} onClick={() => setShowAddModal(true)}>
-                    + Add Lead
-                </button>
+                <div style={{ display: 'flex', gap: '1rem' }}>
+                    <button className="btn btn-secondary" style={{ width: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }} onClick={() => alert('CSV Export coming soon!')}>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                        Export CSV
+                    </button>
+                    <button className="btn btn-primary" style={{ width: 'auto' }} onClick={() => setShowAddModal(true)}>
+                        + Add Lead
+                    </button>
+                </div>
             </div>
 
             <div className="table-container">
@@ -183,7 +191,9 @@ export default function LeadsPage() {
                     </div>
                 ) : leads.length === 0 ? (
                     <div className="empty-state">
-                        <div className="empty-state-icon">👥</div>
+                        <div className="empty-state-icon">
+                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--text-muted)' }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+                        </div>
                         <h3>No leads found</h3>
                         <p>
                             {search || statusFilter !== 'all'
@@ -200,6 +210,8 @@ export default function LeadsPage() {
                                     <th>Phone</th>
                                     <th>Class</th>
                                     <th>Course / Subject</th>
+                                    <th>Budget</th>
+                                    <th>Timeline</th>
                                     <th>Status</th>
                                     <th>Created</th>
                                     <th>Actions</th>
@@ -212,6 +224,14 @@ export default function LeadsPage() {
                                         <td className="phone-cell">{formatPhone(lead.parent_phone)}</td>
                                         <td>{lead.class || '—'}</td>
                                         <td>{lead.course_interest || '—'}</td>
+                                        <td>{lead.budget ? lead.budget.replace(/(\d+)/, (match) => parseInt(match).toLocaleString('en-IN')) : '—'}</td>
+                                        <td>
+                                            {lead.timeline ? (
+                                                <span style={{ fontSize: '12px', background: 'var(--bg-glass)', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
+                                                    {lead.timeline}
+                                                </span>
+                                            ) : '—'}
+                                        </td>
                                         <td>
                                             <select
                                                 className={`status-select ${lead.status}`}
@@ -235,11 +255,14 @@ export default function LeadsPage() {
                                         </td>
                                         <td>
                                             <button
-                                                className="btn btn-sm btn-danger"
+                                                className="btn btn-sm"
                                                 onClick={() => handleDelete(lead.id)}
                                                 title="Delete lead"
+                                                style={{ background: 'transparent', border: 'none', color: 'var(--text-tertiary)', padding: '6px' }}
+                                                onMouseOver={(e) => e.currentTarget.style.color = 'var(--danger)'}
+                                                onMouseOut={(e) => e.currentTarget.style.color = 'var(--text-tertiary)'}
                                             >
-                                                🗑
+                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                                             </button>
                                         </td>
                                     </tr>

@@ -71,6 +71,33 @@ export default function DashboardPage() {
                 </div>
             </div>
 
+            {totalLeads === 0 && (
+                <div className="chart-card" style={{ marginBottom: '2rem', background: 'var(--bg-card)', border: '1px solid var(--border-color)', position: 'relative', overflow: 'hidden' }}>
+                    <div style={{ position: 'absolute', top: 0, left: 0, width: '4px', height: '100%', background: 'var(--accent-gradient)' }}></div>
+                    <h2 style={{ fontSize: '1.25rem', fontWeight: 700, marginBottom: '1.25rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span>🚀</span> Quick Setup Guide
+                    </h2>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--success)' }}>
+                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--success-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✓</div>
+                            <span style={{ fontWeight: 500, color: 'var(--text-primary)' }}>Account created</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-muted)' }}>
+                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: '2px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}></div>
+                            <span style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>WhatsApp connected to Meta</span>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-muted)' }}>
+                            <div style={{ width: '24px', height: '24px', borderRadius: '50%', border: '2px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}></div>
+                            <span style={{ fontWeight: 500, color: 'var(--text-secondary)' }}>First lead captured</span>
+                        </div>
+                        
+                        <div style={{ marginTop: '0.5rem', paddingLeft: '36px' }}>
+                            <Link href="/dashboard/webhook" className="btn btn-primary btn-sm" style={{ width: 'auto', display: 'inline-block' }}>Complete Setup →</Link>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <div className="stats-grid">
                 <div className="stat-card">
                     <div className="stat-card-header">

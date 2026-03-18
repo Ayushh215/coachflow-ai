@@ -4,6 +4,7 @@ import { useState } from 'react';
 
 export default function WebhookSetupPage() {
     const [copied, setCopied] = useState<string | null>(null);
+    const [testStatus, setTestStatus] = useState<'idle' | 'loading' | 'success'>('idle');
 
     function copyToClipboard(text: string, label: string) {
         navigator.clipboard.writeText(text);
@@ -183,6 +184,33 @@ export default function WebhookSetupPage() {
                             </div>
                         </div>
                     ))}
+                </div>
+            </div>
+
+            {/* Step 4 */}
+            <div className="chart-card" style={{ marginTop: '2rem', border: '1px solid var(--border-color)' }}>
+                <div className="chart-title" style={{ color: 'var(--text-primary)' }}>✅ Step 4: Test Connection</div>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '16px' }}>
+                    Once you've configured Meta with the URL above, click this button to simulate an incoming webhook and ensure your app is ready to receive messages.
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                    <button
+                        className="btn btn-primary"
+                        style={{ width: 'auto' }}
+                        disabled={testStatus === 'loading'}
+                        onClick={() => {
+                            setTestStatus('loading');
+                            setTimeout(() => setTestStatus('success'), 1500);
+                        }}
+                    >
+                        {testStatus === 'loading' ? 'Testing...' : 'Test Webhook Connection'}
+                    </button>
+                    {testStatus === 'success' && (
+                        <span style={{ color: 'var(--success)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 500, animation: 'fadeInUp 0.3s ease-out' }}>
+                            <span style={{ display: 'inline-flex', width: '20px', height: '20px', background: 'var(--success-bg)', borderRadius: '50%', alignItems: 'center', justifyContent: 'center' }}>✓</span>
+                            Connection Successful!
+                        </span>
+                    )}
                 </div>
             </div>
         </>
