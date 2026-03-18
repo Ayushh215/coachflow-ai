@@ -72,7 +72,7 @@ export default function OnboardPage() {
                         <p>Create your institute account and connect WhatsApp</p>
                     </div>
 
-                {error && <div className="auth-error">{error}</div>}
+
 
                 <form onSubmit={handleSubmit}>
                     <div className="form-group">
@@ -168,6 +168,8 @@ export default function OnboardPage() {
                         {loading ? 'Creating account...' : 'Create Account'}
                     </button>
                 </form>
+
+                {error && <div className="auth-error" style={{ color: 'red', marginTop: '1rem', textAlign: 'center', marginBottom: 0 }}>{error}</div>}
 
                 <div className="auth-footer">
                     Already have an account?{' '}

@@ -50,10 +50,21 @@ export async function POST(request: Request) {
             { message: 'Account created successfully. Please verify your email.', owner: { id: owner.id, name: owner.name, email: owner.email, institute_name: owner.institute_name } },
             { status: 201 }
         );
-    } catch (error) {
+    } catch (error: any) {
         console.error('Signup error:', error);
+        
+        if (error.code === '23505') {
+            const errorConstraint = (error.constraint || error.detail || '').toLowerCase();
+            if (errorConstraint.includes('email')) {
+                return NextResponse.json({ error: 'An account with this email already exists' }, { status: 400 });
+            }
+            if (errorConstraint.includes('whatsapp_phone_number_id')) {
+                return NextResponse.json({ error: 'This WhatsApp Phone Number ID is already registered' }, { status: 400 });
+            }
+        }
+        
         return NextResponse.json(
-            { error: 'Internal server error' },
+            { error: 'Something went wrong. Please try again.' },
             { status: 500 }
         );
     }
