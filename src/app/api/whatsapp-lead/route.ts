@@ -14,16 +14,19 @@ function isValidPhone(phone: string): boolean {
 const MESSAGES = {
     welcome: `Hi! 👋 I'm here to help you find the right course. What's your name?`,
     askCourse: (name: string) => `Nice to meet you, ${name}! Which course are you interested in?`,
-    askBudget: `Great choice! What's your budget range? (e.g. ₹5,000–₹20,000)`,
-    askTimeline: `Perfect. When are you looking to start? (This month / Next month / Just exploring)`,
+    askBudget: `What is your approximate budget for this course?\n1️⃣ Under ₹10,000\n2️⃣ ₹10,000 - ₹20,000\n3️⃣ Above ₹20,000`,
+    askTimeline: `When are you planning to start?\n1️⃣ Immediately\n2️⃣ Within 1 month\n3️⃣ Just browsing`,
+    askPhone: `Could you please share your 10-digit mobile number so our counselor can call you?`,
     confirmation: `Thanks! Our team will contact you shortly. 🙏`,
     invalidInput: `Sorry, I didn't quite catch that. Could you please specify again?`,
+    invalidName: `Please enter your full name (First & Last name).`,
+    invalidPhone: `Please enter a valid 10-digit mobile number.`,
     clarifyCourse: `Could you clarify which subject or course you're looking for? E.g. JEE, NEET, Math, English, etc.`,
-    clarifyBudget: `Could you specify a clear budget amount? E.g. "5000", "5k to 10k", etc.`,
-    clarifyTimeline: `Could you specify when you want to start? E.g. "This month", "Next month", or "Just exploring"`,
+    clarifyBudget: `Could you specify a clear budget amount? E.g. "1", "Under 10k", etc.`,
+    clarifyTimeline: `Could you specify when you want to start? E.g. "1", "Immediately", etc.`,
     alreadyRegistered: `👋 Welcome back!\n\nYour inquiry is already registered. Our team will contact you shortly.\n\nType "restart" to start over.`,
-    adminNotification: (name: string, course: string, budget: string, timeline: string, phone: string) =>
-        `🎉 New Lead!\nName: ${name}\nCourse: ${course}\nBudget: ${budget}\nTimeline: ${timeline}\nPhone: ${phone}`,
+    adminNotification: (name: string, course: string, budget: string, timeline: string, phone: string, altPhone?: string) =>
+        `🎉 New Lead!\nName: ${name}\nCourse: ${course}\nBudget: ${budget}\nTimeline: ${timeline}\nWhatsApp: ${phone}${altPhone ? `\nAlt Phone: ${altPhone}` : ''}`,
 };
 
 // ─── POST /api/whatsapp-lead ─────────────────────────────────────────────────
@@ -110,8 +113,9 @@ export async function POST(request: Request) {
                 const intent = await extractIntent(text, 'awaiting_name');
                 const finalName = intent || text;
                 
-                if (finalName === 'UNCLEAR' || finalName.length < 2) {
-                    reply = MESSAGES.invalidInput;
+                // Name validation expects at least 2 words
+                if (finalName === 'UNCLEAR' || finalName.trim().split(/\s+/).length < 2) {
+                    reply = MESSAGES.invalidName;
                     break;
                 }
                 newData.student_name = finalName;
@@ -167,11 +171,24 @@ export async function POST(request: Request) {
                     reply = MESSAGES.clarifyTimeline;
                     break;
                 }
-                if (finalTimeline.length < 2) {
+                if (finalTimeline.length < 1) {
                     reply = MESSAGES.invalidInput;
                     break;
                 }
                 newData.timeline = finalTimeline;
+                reply = MESSAGES.askPhone;
+                newStep = 'awaiting_phone';
+                break;
+            }
+
+            // ·· AWAITING PHONE ·············································
+            case 'awaiting_phone': {
+                const cleanedPhone = text.replace(/\D/g, '');
+                if (cleanedPhone.length !== 10) {
+                    reply = MESSAGES.invalidPhone;
+                    break;
+                }
+                newData.alt_phone = cleanedPhone;
 
                 // Create / update lead (UPSERT prevents duplicates)
                 try {
@@ -192,7 +209,7 @@ export async function POST(request: Request) {
                     // Notify admin if admin_phone is configured
                     if (adminPhone) {
                         const notification = MESSAGES.adminNotification(
-                            newData.student_name, newData.course_interest, newData.budget, newData.timeline, phone
+                            newData.student_name, newData.course_interest, newData.budget, newData.timeline, phone, newData.alt_phone
                         );
                         const notifyResult = await sendMessage(adminPhone, notification);
                         if (!notifyResult.success) {
