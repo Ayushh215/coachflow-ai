@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS owners (
   password_hash VARCHAR(255) NOT NULL,
   institute_name VARCHAR(255) DEFAULT 'Coaching Institute',
   whatsapp_phone_number_id VARCHAR(255) UNIQUE,
+  whatsapp_access_token VARCHAR(255),
   admin_phone VARCHAR(20),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

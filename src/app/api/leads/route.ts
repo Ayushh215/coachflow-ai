@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get('status');
     const search = searchParams.get('search');
+    const dateFilter = searchParams.get('dateFilter');
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '20');
     const offset = (page - 1) * limit;
@@ -29,6 +30,12 @@ export async function GET(request: NextRequest) {
         sql += ` AND (student_name ILIKE $${paramIndex} OR parent_phone ILIKE $${paramIndex})`;
         params.push(`%${search}%`);
         paramIndex++;
+    }
+
+    if (dateFilter === 'today') {
+        sql += ` AND created_at >= CURRENT_DATE`;
+    } else if (dateFilter === 'this_week') {
+        sql += ` AND created_at >= date_trunc('week', CURRENT_DATE)`;
     }
 
     // Get total count

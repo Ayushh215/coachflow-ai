@@ -5,7 +5,7 @@ import { signToken } from '@/lib/auth';
 
 export async function POST(request: Request) {
     try {
-        const { name, email, password, institute_name, whatsapp_phone_number_id, admin_phone } = await request.json();
+        const { name, email, password, institute_name, whatsapp_phone_number_id, whatsapp_access_token, admin_phone } = await request.json();
 
         if (!name || !email || !password || !institute_name) {
             return NextResponse.json(
@@ -26,8 +26,8 @@ export async function POST(request: Request) {
         const password_hash = await bcrypt.hash(password, 12);
 
         const result = await query(
-            'INSERT INTO owners (name, email, password_hash, institute_name, whatsapp_phone_number_id, admin_phone) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, email, institute_name',
-            [name, email, password_hash, institute_name, whatsapp_phone_number_id || null, admin_phone || null]
+            'INSERT INTO owners (name, email, password_hash, institute_name, whatsapp_phone_number_id, whatsapp_access_token, admin_phone) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, email, institute_name',
+            [name, email, password_hash, institute_name, whatsapp_phone_number_id || null, whatsapp_access_token || null, admin_phone || null]
         );
 
         const owner = result.rows[0];

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function SignupPage() {
+export default function OnboardPage() {
     const router = useRouter();
     const [form, setForm] = useState({
         name: '',
@@ -11,7 +11,7 @@ export default function SignupPage() {
         password: '',
         institute_name: '',
         whatsapp_phone_number_id: '',
-        admin_phone: '',
+        whatsapp_access_token: '',
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -49,30 +49,16 @@ export default function SignupPage() {
 
     return (
         <div className="auth-container">
-            <div className="auth-card">
+            <div className="auth-card" style={{ maxWidth: '500px' }}>
                 <div className="auth-logo">
                     <div className="auth-logo-icon">🎓</div>
-                    <h1>CoachIQ</h1>
-                    <p>Create your institute account</p>
+                    <h1>CoachIQ Onboarding</h1>
+                    <p>Create your institute account and connect WhatsApp</p>
                 </div>
 
                 {error && <div className="auth-error">{error}</div>}
 
                 <form onSubmit={handleSubmit}>
-                    <div className="form-group">
-                        <label htmlFor="name">Your Name</label>
-                        <input
-                            id="name"
-                            type="text"
-                            className="form-input"
-                            placeholder="John Doe"
-                            value={form.name}
-                            onChange={(e) => updateField('name', e.target.value)}
-                            required
-                            autoFocus
-                        />
-                    </div>
-
                     <div className="form-group">
                         <label htmlFor="institute_name">Institute Name</label>
                         <input
@@ -82,6 +68,20 @@ export default function SignupPage() {
                             placeholder="Excellence Coaching Academy"
                             value={form.institute_name}
                             onChange={(e) => updateField('institute_name', e.target.value)}
+                            required
+                            autoFocus
+                        />
+                    </div>
+
+                    <div className="form-group">
+                        <label htmlFor="name">Owner Name</label>
+                        <input
+                            id="name"
+                            type="text"
+                            className="form-input"
+                            placeholder="John Doe"
+                            value={form.name}
+                            onChange={(e) => updateField('name', e.target.value)}
                             required
                         />
                     </div>
@@ -113,6 +113,11 @@ export default function SignupPage() {
                         />
                     </div>
 
+                    <div className="section-header" style={{ marginTop: '2rem', marginBottom: '1rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
+                        <h3 style={{ fontSize: '1rem', fontWeight: 600, color: '#1e293b' }}>WhatsApp Meta Integration</h3>
+                        <p style={{ fontSize: '0.875rem', color: '#64748b' }}>Connect your WhatsApp Business API</p>
+                    </div>
+
                     <div className="form-group">
                         <label htmlFor="whatsapp_phone_number_id">WhatsApp Phone Number ID</label>
                         <input
@@ -123,22 +128,27 @@ export default function SignupPage() {
                             value={form.whatsapp_phone_number_id}
                             onChange={(e) => updateField('whatsapp_phone_number_id', e.target.value)}
                         />
-                        <small className="form-helper">Found in Meta Developer Dashboard</small>
+                        <small className="form-helper">
+                            Found in Meta Developer Dashboard &gt; WhatsApp &gt; API Setup
+                        </small>
                     </div>
 
                     <div className="form-group">
-                        <label htmlFor="admin_phone">Your WhatsApp number for notifications</label>
+                        <label htmlFor="whatsapp_access_token">WhatsApp Access Token</label>
                         <input
-                            id="admin_phone"
-                            type="text"
+                            id="whatsapp_access_token"
+                            type="password"
                             className="form-input"
-                            placeholder="919876543210 (country code, no +)"
-                            value={form.admin_phone}
-                            onChange={(e) => updateField('admin_phone', e.target.value)}
+                            placeholder="EAAI..."
+                            value={form.whatsapp_access_token}
+                            onChange={(e) => updateField('whatsapp_access_token', e.target.value)}
                         />
+                        <small className="form-helper">
+                            Permanent token generated in Meta Business Settings
+                        </small>
                     </div>
 
-                    <button type="submit" className="btn btn-primary" disabled={loading}>
+                    <button type="submit" className="btn btn-primary" disabled={loading} style={{ marginTop: '1.5rem' }}>
                         {loading ? 'Creating account...' : 'Create Account'}
                     </button>
                 </form>

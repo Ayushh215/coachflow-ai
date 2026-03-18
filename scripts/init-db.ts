@@ -19,6 +19,7 @@ async function initDb() {
         // Migrations for existing databases
         console.log('📋 Running migrations...');
         await pool.query(`ALTER TABLE owners ADD COLUMN IF NOT EXISTS whatsapp_phone_number_id VARCHAR(255) UNIQUE`);
+        await pool.query(`ALTER TABLE owners ADD COLUMN IF NOT EXISTS whatsapp_access_token VARCHAR(255)`);
         await pool.query(`ALTER TABLE owners ADD COLUMN IF NOT EXISTS admin_phone VARCHAR(20)`);
         await pool.query(`ALTER TABLE owners ALTER COLUMN institute_name SET DEFAULT 'Coaching Institute'`);
         await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS source VARCHAR(20) DEFAULT 'whatsapp'`);
@@ -27,7 +28,7 @@ async function initDb() {
 
         console.log('✅ Database initialized successfully!');
         console.log('\nTables created:');
-        console.log('  - owners (with whatsapp_phone_number_id, admin_phone)');
+        console.log('  - owners (with whatsapp_phone_number_id, whatsapp_access_token, admin_phone)');
         console.log('  - leads (with source)');
         console.log('  - conversations');
     } catch (error) {
