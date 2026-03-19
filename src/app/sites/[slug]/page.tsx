@@ -7,6 +7,9 @@ import ClientSiteView from './ClientSiteView';
 
 export default async function InstituteSitePage({ params }: { params: { slug: string } }) {
     // Fetch institute site data using slug
+    const resolvedParams = await params;
+    const slug = resolvedParams.slug;
+    
     const query = `
         SELECT * FROM institute_sites
         WHERE slug = $1
@@ -14,7 +17,9 @@ export default async function InstituteSitePage({ params }: { params: { slug: st
     
     let result;
     try {
-        result = await db.query(query, [params.slug]);
+        console.log('Fetching slug:', slug);
+        result = await db.query(query, [slug]);
+        console.log('Result:', result.rows);
     } catch (e) {
         console.error("Failed to load institute data", e);
         return notFound();
