@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import Link from 'next/link';
 import { Inter } from 'next/font/google';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -51,7 +50,7 @@ export default function ClientSiteView({ data }: { data: any }) {
 
         // Stats counter animation
         const statsObserver = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting) {
+            if (entries[0] && entries[0].isIntersecting) {
                 statsObserver.disconnect();
                 // Animate counters
                 let start = 0;
