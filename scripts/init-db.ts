@@ -27,6 +27,26 @@ async function initDb() {
         await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS budget VARCHAR(255)`);
         await pool.query(`ALTER TABLE leads ADD COLUMN IF NOT EXISTS timeline VARCHAR(255)`);
 
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS institute_sites (
+                id SERIAL PRIMARY KEY,
+                owner_id INTEGER REFERENCES owners(id),
+                slug VARCHAR(100) UNIQUE NOT NULL,
+                institute_name VARCHAR(255),
+                tagline VARCHAR(255),
+                about_text TEXT,
+                phone VARCHAR(20),
+                address TEXT,
+                courses JSONB DEFAULT '[]',
+                testimonials JSONB DEFAULT '[]',
+                results JSONB DEFAULT '[]',
+                faculty JSONB DEFAULT '[]',
+                primary_color VARCHAR(7) DEFAULT '#7C3AED',
+                logo_text VARCHAR(5),
+                created_at TIMESTAMP DEFAULT NOW()
+            );
+        `);
+
         console.log('✅ Database initialized successfully!');
         console.log('\nTables created:');
         console.log('  - owners (with whatsapp_phone_number_id, whatsapp_access_token, admin_phone)');
